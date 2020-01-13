@@ -34,11 +34,12 @@
 /* Create a pseudo-tty (pty) and connect it to a JTAG UART stream
  * via JTAG Atlantic
  *
- * The device node is printed. You can connect to the pty with:
+ * The device node is printed. You can connect to the pty with
+ * (for example):
  * $ picocom /dev/pts/10
  *
- * At present doesn't receive cable/device/instance on command line
- * so only one UART device is supported
+ * Example:
+ * pty_uart --cable "USB-Blaster [5-1.3]" --device 1 --instance 0
  */
 
 
@@ -48,6 +49,8 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <poll.h>
+#include <getopt.h>
+#include <string.h>
 
 #include "jtag_atlantic.h"
 #include "common.h"
@@ -55,19 +58,48 @@
 // scan JTAG every N milliseconds if no pty activity
 #define POLL_TIMEOUT 20
 
-int main(void)
+int main(int argc, char *argv[])
 {
     char termBuffer[16384];
     char uartBuffer[16384];
 
-#ifdef DEFAULT_CABLE
-    const char* cable = NULL;
-    const int device = -1;
-    const int instance = -1;
-#else
-    const char* cable = "1";
-    const int device = 1;
-    const int instance = 1;
+    char* cable = NULL;
+    int device = -1;
+    int instance = -1;
+
+    static struct option long_options[] = {
+        {"help", no_argument, 0, 'h'},
+        {"cable", required_argument, 0, 'c'},
+        {"device", required_argument, 0, 'd'},
+        {"instance", required_argument, 0, 'i'},
+        {0, 0, 0, 0}
+    };
+    int option_index = 0;
+    int c = 0;
+
+    while ((c = getopt_long(argc, argv, "hc:d:i:",
+            long_options, &option_index)) != -1) {
+//        int this_option_optind = optind ? optind : 1;
+        switch (c) {
+            case 'c':
+                cable = strdup(optarg);
+                break;
+            case 'd':
+                device = atoi(optarg);
+                break;
+            case 'i':
+                instance = atoi(optarg);
+                break;
+            case 'h':
+            default:
+                fprintf(stderr, "Syntax:\n");
+                fprintf(stderr, "%s [--cable <cable>] [--device <device>] [--instance <instance>] [--help]\n", argv[0]);
+                exit(0);
+        }
+    }
+
+#ifdef DEBUG
+    fprintf(stderr,"cable = '%s', device = %d, instance = %d\n", cable, device, instance);
 #endif
 
     // open a pty and print the device node

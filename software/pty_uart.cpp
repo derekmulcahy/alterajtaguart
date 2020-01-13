@@ -47,9 +47,13 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <poll.h>
 
 #include "jtag_atlantic.h"
 #include "common.h"
+
+// scan JTAG every N milliseconds if no pty activity
+#define POLL_TIMEOUT 20
 
 int main(void)
 {
@@ -105,6 +109,12 @@ int main(void)
     fprintf(stderr, "Unplug the cable or press ^C to stop.\n");
 #endif
 
+    // get ready for poll()
+    struct pollfd pollfds[1];
+    pollfds[0].fd = ptyDescriptor;
+    pollfds[0].events = POLLIN;
+
+
     // poll each end for data, send to the other side
     while(1) {
 
@@ -120,14 +130,20 @@ int main(void)
             fsync(ptyDescriptor);
         }
 
-        ssize_t termCount = read(ptyDescriptor, termBuffer, sizeof termBuffer);
+        // look for activity on the pty
+        poll(pollfds, 1, POLL_TIMEOUT /* ms */);
 
-        if (termCount > 0) {
-            jtagatlantic_write(atlantic, termBuffer, termCount);
+        if (pollfds[0].revents & POLLIN) {
+            pollfds[0].revents = 0;
+            ssize_t termCount = read(pollfds[0].fd, termBuffer, sizeof termBuffer);
+
+            if (termCount > 0) {
+                jtagatlantic_write(atlantic, termBuffer, termCount);
 #ifdef DEBUG
-            printf("tx%ld\n", termCount);
+                printf("tx%ld\n", termCount);
 #endif
-            jtagatlantic_flush(atlantic);
+                jtagatlantic_flush(atlantic);
+            }
         }
         
     }

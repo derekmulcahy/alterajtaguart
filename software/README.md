@@ -16,7 +16,7 @@ About the examples
 
 * `echohello.cpp` is intended to be used together with `ExampleEcho.bsv`. It sends some strings to the UART, receives the returned data and prints it to the console.
 * `counterperf.cpp` is intended to be used together with `ExampleCounter.bsv`. It reads data from the counter, validates the data, and measures the data rate in bit/s. A rate of about 1 Mbit/s should be expected.
-* 'jtaguart_pty.cpp' creates a pseudo-terminal (pty) and pipes its data to/from the UART.  Command line options are analogous to nios2-terminal: `jtaguart_pty --cable <cable id> --device <device # on JTAG chain> --instance <instance # on device>`.  The device node of the pty is printed, and can be connected with (for example) `picocom /dev/pts/10`
+* `jtaguart_pty.cpp` creates a pseudo-terminal (pty) and pipes its data to/from the UART.  Command line options are analogous to nios2-terminal: `jtaguart_pty --cable <cable id> --device <device # on JTAG chain> --instance <instance # on device>`.  The device node of the pty is printed, and can be connected with (for example) `picocom /dev/pts/10`
 
 Known caveats
 =============

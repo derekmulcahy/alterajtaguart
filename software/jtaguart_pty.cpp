@@ -39,7 +39,7 @@
  * $ picocom /dev/pts/10
  *
  * Example:
- * pty_uart --cable "USB-Blaster [5-1.3]" --device 1 --instance 0
+ * jtaguart_pty --cable "USB-Blaster [5-1.3]" --device 1 --instance 0
  */
 
 

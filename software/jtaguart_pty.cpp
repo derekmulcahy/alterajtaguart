@@ -165,7 +165,9 @@ int main(int argc, char *argv[])
         // look for activity on the pty
         poll(pollfds, 1, POLL_TIMEOUT /* ms */);
 
-        if (pollfds[0].revents & POLLIN) {
+        if (pollfds[0].revents & POLLHUP) {
+            usleep(100000);
+        } else if (pollfds[0].revents & POLLIN) {
             pollfds[0].revents = 0;
             ssize_t termCount = read(pollfds[0].fd, termBuffer, sizeof termBuffer);
 
